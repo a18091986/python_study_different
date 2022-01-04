@@ -1,0 +1,2 @@
+cd /d D:\!!LOCAL_MAIN!!!\python_study_different\GUI_TRACK\venv\Scripts
+pyuic5.exe -x D:\!!LOCAL_MAIN!!!\python_study_different\GUI_TRACK\qt\TRACKER.ui -o D:\!!LOCAL_MAIN!!!\python_study_different\GUI_TRACK\tracker.py
