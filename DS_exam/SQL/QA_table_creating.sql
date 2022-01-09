@@ -9,7 +9,8 @@ create table if not exists QA(
   question varchar(1000),
   answer varchar(100),
   answer_wait bool,
-  link varchar(500), 
+  link varchar(500),
+  question_category varchar(500),
   question_rate int,
   note varchar(500),
   primary key (id)
