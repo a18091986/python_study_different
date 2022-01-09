@@ -6,3 +6,16 @@ git rm --cached DS_exam/db_connect.py
 
 посмотреть различия в локальной и удаленной ветках git
 https://stackoverflow.com/questions/231211/using-git-how-do-i-find-changes-between-local-and-remote
+
+
+git fetch python_study_different
+загрузка списка изменений на удаленном репозитории для проведения сравнения с локальным
+
+git diff DS_exam..python_study_different/DS_exam
+проведение сравнения
+
+git push python_study_different -f
+принудительное перезаписывание удаленного репозитория своей версией
+
+
+
