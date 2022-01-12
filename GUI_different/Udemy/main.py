@@ -1,13 +1,16 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow
+# This is a sample Python script.
 
-app = QApplication(sys.argv)
+# Press Shift+F10 to execute it or replace it with your code.
+# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-window = QMainWindow()
 
-window.statusBar().showMessage('Welcom to PyWt6 Course')
-window.menuBar().addMenu('File')
-window.menuBar().addMenu('Properties')
+def print_hi(name):
+    # Use a breakpoint in the code line below to debug your script.
+    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
-window.show()
-sys.exit(app.exec())
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    print_hi('PyCharm')
+
+# See PyCharm help at https://www.jetbrains.com/help/pycharm/
