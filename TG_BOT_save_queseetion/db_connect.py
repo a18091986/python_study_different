@@ -5,7 +5,7 @@ def connect_to_db():
         mydb = mc.connect(
         host = '192.168.2.165',
         user = 'admin',
-        password = '0gfyfctyr0MYSQL',
+        password = '******',
         database = 'QBot')
 
         print('Connected')
