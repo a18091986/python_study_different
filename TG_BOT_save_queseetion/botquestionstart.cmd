@@ -1,0 +1,1 @@
+cd C:\Users\Zver\Desktop\Bot_question\venv\Scripts & activate.bat & cd.. & cd.. & python main.py
