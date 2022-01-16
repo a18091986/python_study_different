@@ -1,0 +1,10 @@
+pyuic6 -x main.ui -o mainGUI.py
+
+pyuic6 -x addbook.ui -o addbook.py
+
+pyuic6 -x addmember.ui -o addmember.py
+
+pyuic6 -x bookview.ui -o bookview.py
+
+pyuic6 -x membersview.ui -o membersview.py
+
