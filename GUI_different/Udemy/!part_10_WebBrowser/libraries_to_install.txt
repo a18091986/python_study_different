@@ -1,5 +1,5 @@
 PyQT5
-pyinstaller
+PyQtWebEngine
 pyinstaller --onefile -windowed --icon=icon.ico mediaexample.py
 
 jrsoftware.org для преобразования в инсталляционый файл
