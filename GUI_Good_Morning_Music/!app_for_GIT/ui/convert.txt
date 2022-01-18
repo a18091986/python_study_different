@@ -1,0 +1,1 @@
+pyuic6 -x .\!app_for_GIT\ui\main.ui -o main_window.py

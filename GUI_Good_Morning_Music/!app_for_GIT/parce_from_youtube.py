@@ -20,7 +20,6 @@ def get_info_about_video(link):
         print(video_title, uploader)
         return video_title, uploader
 
-# print(get_info_about_video("https://youtu.be/s3F3xKBV47w?list=PLC8RAfDqfnZhu7xmmjfaK5tozr7wF6X1t"))
 
 
 # from youtube_dl import YoutubeDL

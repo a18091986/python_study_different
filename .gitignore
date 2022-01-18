@@ -6,4 +6,9 @@ dist
 build
 *.spec
 not_for_github
+trash
+NOT_FOR_GIT
+*.fsf
+.idea
+
 
