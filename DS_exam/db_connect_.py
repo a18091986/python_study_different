@@ -5,12 +5,14 @@ def connect_to_db():
         mydb = mc.connect(
         host = '192.168.2.165',
         user = 'admin',
-        password = '*********',
+        password = '****',
         database = 'DS_exam')
-
         print('Connected')
-        return mydb
+        connection = True
     except mc.Error as e:
-        print(e)
+        mydb = None
+        connection = e
+
+    return (mydb, connection)
 
 # connect_to_db()
