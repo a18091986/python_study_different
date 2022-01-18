@@ -5,3 +5,4 @@ venv
 dist
 build
 *.spec
+not_for_github
