@@ -1,3 +1,6 @@
-from datetime import date, datetime.None
+import datetime
+from datetime import date
 
-print(date(2001,1,1))
+datetime.datetime.strptime()
+
+print(date(2001, 1, 1))
