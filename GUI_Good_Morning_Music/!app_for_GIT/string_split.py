@@ -6,7 +6,7 @@ def string_split(string):
     string_chunk = 0
     for item in string_list:
         string_chunk += len(item)
-        if string_chunk < 50:
+        if string_chunk < 100:
             string_join_list.append(item)
         else:
             string_join_list.append('\n')
@@ -27,6 +27,7 @@ def string_split(string):
         cur_list.append(cur_result)
 
     result = '\n'.join(cur_list)
+    print(result)
     return result
 
 
