@@ -1,6 +1,5 @@
 import mysql.connector as mc
 
-<<<<<<< HEAD
 def connect_to_db(host, port, user, password, database):
     try:
         mydb = mc.connect(
