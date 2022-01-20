@@ -69,7 +69,9 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.lineEdit_author_select.clear()
         self.lineEdit_date_select.clear()
         self.lineEdit_link_select.clear()
-        self.radioButton_not_sent_select.setChecked(True)
+        self.lineEdit_description_select.clear()
+        self.radioButton_sent_select_2.setChecked(True)
+        self.checkBox_like.setChecked(True)
     #
     def add_row_in_db(self):
 
@@ -120,12 +122,12 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
     def select_from_db(self):
         select_condition = {
             'id': (self.lineEdit_id_select.text() != '', self.lineEdit_id_select.text()),
-            'genre': (self.lineEdit_genre_select.text() != '', f"'{self.lineEdit_genre_select.text()}'"),
-            'channel_author': (self.lineEdit_author_select.text() != '', f"'{self.lineEdit_author_select.text()}'"),
+            'genre': (self.lineEdit_genre_select.text() != '', f"'%{self.lineEdit_genre_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_genre_select.text()}'"),
+            'channel_author': (self.lineEdit_author_select.text() != '', f"'%{self.lineEdit_author_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_author_select.text()}'"),
             'link': (self.lineEdit_link_select.text() != '', f"'{self.lineEdit_link_select.text()}'"),
-            'description': (self.lineEdit_description_select.text() != '', f"'{self.lineEdit_description_select.text()}'"),
+            'description': (self.lineEdit_description_select.text() != '', f"'%{self.lineEdit_description_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_description_select.text()}'"),
             'date_when_send_into_group': (self.lineEdit_date_select.displayText() != '', f"'{self.lineEdit_date_select.text()}'"),
-            'whether_sent': (True, 1 if self.radioButton_sent_select.isChecked() else 0),
+            'whether_sent': (self.radioButton_sent_select_2.isChecked() != True, 1 if self.radioButton_sent_select.isChecked() else 0),
         }
         query_list = []
         query_list_column_name = []
@@ -135,7 +137,10 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                 query_list_column_name.append(key)
                 query_list_value.append((value[1]))
         for item in zip(query_list_column_name, query_list_value):
-            query_list.append(f'{item[0]} = {item[1]}')
+            if self.checkBox_like.isChecked():
+                query_list.append(f'{item[0]} like {item[1]}')
+            else:
+                query_list.append(f'{item[0]} = {item[1]}')
         self.select_list = query_list.copy()
         query = f'select * from music where {" and ".join(query_list)}'
         print(query)
