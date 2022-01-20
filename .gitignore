@@ -1,9 +1,13 @@
 .idea
+__pycache__
+venv
 dist
 build
 *.spec
-__pycache__
+not_for_git
+trash
+NOT_FOR_GIT
+.idea
 db_connect.py
-venv
 *.fsf
 next_steps.txt
