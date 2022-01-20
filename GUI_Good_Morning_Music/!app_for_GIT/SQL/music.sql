@@ -53,6 +53,16 @@ DELETE from music where link = 'https://youtu.be/T0XoA4qIt_M'
 
 select * from music where whether_sent = 0;
 
+-- delete from music;
 
+select * from music;
+select * from music where whether_sent = 0;
+select * from music where date_when_send_into_group = DATE('2001-01-01');
+
+-- alter table music auto_increment = 1;
+
+-- select NOW();-- 20.01.2022 18:43:30
+
+select DATE('2001-12-01')
 
 -- https://youtu.be/xSgT4ZtT5M0
