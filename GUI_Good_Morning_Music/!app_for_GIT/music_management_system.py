@@ -1,10 +1,12 @@
 # import pandas as pd
-from datetime import date
+from datetime import date, datetime
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem
 from main_window import Ui_MainWindow
 from parce_from_youtube import get_info_about_video
 from db_connect import connect_to_db
 from string_split import string_split
+
+
 # import mysql.connector
 
 
@@ -13,7 +15,6 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.show()
-
 
         self.pushButton_connect.clicked.connect(self.db_connect)
         self.pushButton_save.clicked.connect(self.add_row_in_db)
@@ -39,7 +40,7 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.lineEdit_name_of_db.setText(database)
 
         mydb, connection = connect_to_db(ip, port, login, password, database)
-        if connection == True:
+        if connection == 'connected':
             print('Connection is Established')
             self.label_result.setText('Connected to DB')
             self.label_result.setStyleSheet('color:green')
@@ -58,7 +59,7 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.lineEdit_id_replace.clear()
         self.lineEdit_genre_replace.clear()
         self.lineEdit_author_replace.clear()
-        self.radioButton_not_sent_replace.setChecked(True)
+        self.radioButton_sent_replace.setChecked(True)
         self.lineEdit_date_replace.clear()
         self.lineEdit_link_replace.clear()
         self.lineEdit_description_replace.clear()
@@ -72,24 +73,41 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.lineEdit_description_select.clear()
         self.radioButton_sent_select_2.setChecked(True)
         self.checkBox_like.setChecked(True)
+
     #
     def add_row_in_db(self):
-
         self.link = self.lineEdit_link.text()
         self.genre = self.lineEdit_genre.text()
         if self.genre == '':
             self.genre = 'undefined'
-        self.date_of = date(2001, 1, 1)
+        if self.lineEdit_date.text():
+            try:
+                date_of = datetime.strptime(self.lineEdit_date.text(), '%d%m%Y').date()
+                self.radioButton_add_into_sent.setChecked(True)
+            except:
+                self.label_result.setText('Wrong data format!')
+                self.label_result.setStyleSheet('color:red')
+                print('Жду исправления даты')
+                return False
+        else:
+            date_of = date(2001, 1, 1)
         if self.radioButton_add_into_sent.isChecked():
             self.whether_sent = 1
         else:
             self.whether_sent = 0
 
-        self.description, self.author = get_info_about_video(self.link)
+        status, self.description, self.author = get_info_about_video(self.link)
+        if status == True:
+            pass
+        else:
+            self.label_result.setText(f'Ошибка парсинга информации о видео \n {self.description}')
+            self.label_result.setStyleSheet('color:red')
+            return False
 
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
 
-        if connection == True:
+        if connection == 'connected':
 
             print('Connection is Established')
 
@@ -101,7 +119,7 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                 try:
                     mycursor = mydb.cursor()
                     query = f"INSERT INTO music(link, genre, channel_author, description, date_when_send_into_group, whether_sent) VALUES (%s, %s, %s, %s, %s, %s)"
-                    value = (self.link, self.genre, self.author, self.description, self.date_of, self.whether_sent)
+                    value = (self.link, self.genre, self.author, self.description, date_of, self.whether_sent)
                     mycursor.execute(query, value)
                     mydb.commit()
                     print('Информация успешно записана')
@@ -118,16 +136,34 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
             print(connection)
             self.label_result.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_result.setStyleSheet('color:red')
+
     #
     def select_from_db(self):
+        if self.lineEdit_date_select.text() != '':
+            try:
+                date_of = f"'{datetime.strptime(self.lineEdit_date_select.text(), '%d%m%Y').date()}'"
+                print(date_of)
+            except:
+                self.label_edit_tab_result.setText('Wrong data format!')
+                self.label_edit_tab_result.setStyleSheet('color:red')
+                print('Жду исправления даты')
+                return False
+        else:
+            date_of = ''
         select_condition = {
             'id': (self.lineEdit_id_select.text() != '', self.lineEdit_id_select.text()),
-            'genre': (self.lineEdit_genre_select.text() != '', f"'%{self.lineEdit_genre_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_genre_select.text()}'"),
-            'channel_author': (self.lineEdit_author_select.text() != '', f"'%{self.lineEdit_author_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_author_select.text()}'"),
+            'genre': (self.lineEdit_genre_select.text() != '',
+                      f"'%{self.lineEdit_genre_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_genre_select.text()}'"),
+            'channel_author': (self.lineEdit_author_select.text() != '',
+                               f"'%{self.lineEdit_author_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_author_select.text()}'"),
             'link': (self.lineEdit_link_select.text() != '', f"'{self.lineEdit_link_select.text()}'"),
-            'description': (self.lineEdit_description_select.text() != '', f"'%{self.lineEdit_description_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_description_select.text()}'"),
-            'date_when_send_into_group': (self.lineEdit_date_select.displayText() != '', f"'{self.lineEdit_date_select.text()}'"),
-            'whether_sent': (self.radioButton_sent_select_2.isChecked() != True, 1 if self.radioButton_sent_select.isChecked() else 0),
+            'description': (self.lineEdit_description_select.text() != '',
+                            f"'%{self.lineEdit_description_select.text()}%'" if self.checkBox_like.isChecked() else f"'{self.lineEdit_description_select.text()}'"),
+            'date_when_send_into_group': (
+                self.lineEdit_date_select.displayText() != '', date_of),
+            'whether_sent': (
+                self.radioButton_sent_select_2.isChecked() != True,
+                1 if self.radioButton_sent_select.isChecked() else 0),
         }
         query_list = []
         query_list_column_name = []
@@ -144,8 +180,9 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.select_list = query_list.copy()
         query = f'select * from music where {" and ".join(query_list)}'
         print(query)
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
-        if connection == True:
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        if connection == 'connected':
             try:
                 mycursor = mydb.cursor()
                 mycursor.execute(query)
@@ -155,7 +192,8 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                     for row_number, row_data in enumerate(result):
                         self.tableWidget_select_result.insertRow(row_number)
                         for column_number, data in enumerate(row_data):
-                            self.tableWidget_select_result.setItem(row_number, column_number, QTableWidgetItem(str(data)))
+                            self.tableWidget_select_result.setItem(row_number, column_number,
+                                                                   QTableWidgetItem(str(data)))
 
                     self.label_edit_tab_result.setText('Information was selected successfully')
                     self.label_edit_tab_result.setStyleSheet('color:green')
@@ -172,15 +210,29 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
             print(connection)
             self.label_edit_tab_result.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_edit_tab_result.setStyleSheet('color:red')
+
     #
     def replace_by(self):
+        if self.lineEdit_date_replace.text():
+            try:
+                date_of = f"'{datetime.strptime(self.lineEdit_date_replace.text(), '%d%m%Y').date()}'"
+                print(date_of)
+            except:
+                self.label_edit_tab_result.setText('Wrong data format!')
+                self.label_edit_tab_result.setStyleSheet('color:red')
+                print('Жду исправления даты')
+                return False
+        else:
+            date_of = ''
         replace_insertion = {
             'id': (self.lineEdit_id_replace.text() != '', self.lineEdit_id_replace.text()),
             'genre': (self.lineEdit_genre_replace.text() != '', f"'{self.lineEdit_genre_replace.text()}'"),
             'channel_author': (self.lineEdit_author_replace.text() != '', f"'{self.lineEdit_author_replace.text()}'"),
             'link': (self.lineEdit_link_replace.text() != '', f"'{self.lineEdit_link_replace.text()}'"),
-            'description': (self.lineEdit_description_replace.text() != '', f"'{self.lineEdit_description_replace.text()}'"),
-            'date_when_send_into_group': (self.lineEdit_date_replace.displayText() != '', f"'{self.lineEdit_date_replace.text()}'"),
+            'description': (
+                self.lineEdit_description_replace.text() != '', f"'{self.lineEdit_description_replace.text()}'"),
+            'date_when_send_into_group': (
+                self.lineEdit_date_replace.displayText() != '', date_of),
             'whether_sent': (True, 1 if self.radioButton_sent_replace.isChecked() else 0),
         }
         print(replace_insertion)
@@ -194,17 +246,15 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         for item in zip(query_list_column_name, query_list_value):
             query_list.append(f'{item[0]} = {item[1]}')
         print(query_list)
-        print('!')
         query = f'update music set {",".join(query_list)} where {" and ".join(self.select_list)}'
-        print('!!')
         print(query)
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
-        if connection == True:
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        if connection == 'connected':
             try:
                 mycursor = mydb.cursor()
                 mycursor.execute(query)
                 mydb.commit()
-                print('!!!')
                 self.label_edit_tab_result.setText('Replaced successfully')
                 self.label_edit_tab_result.setStyleSheet('color:green')
             except Exception as e:
@@ -219,8 +269,9 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
 
     def execute_free_query(self):
         query = self.textEdit.toPlainText()
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
-        if connection == True:
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        if connection == 'connected':
             try:
                 if self.buttonGroup.checkedButton().text() == 'Select':
                     mycursor = mydb.cursor()
@@ -231,13 +282,14 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                         for row_number, row_data in enumerate(result):
                             self.tableWidget_select_result_2.insertRow(row_number)
                             for column_number, data in enumerate(row_data):
-                                self.tableWidget_select_result_2.setItem(row_number, column_number, QTableWidgetItem(str(data)))
+                                self.tableWidget_select_result_2.setItem(row_number, column_number,
+                                                                         QTableWidgetItem(str(data)))
                                 self.label_query_result_2.setText('Information was selected successfully')
                                 self.label_query_result_2.setStyleSheet('color:green')
                     else:
-                         self.tableWidget_select_result_2.setRowCount(0)
-                         self.label_query_result_2.setText('Nothing find')
-                         self.label_query_result_2.setStyleSheet('color:red')
+                        self.tableWidget_select_result_2.setRowCount(0)
+                        self.label_query_result_2.setText('Nothing find')
+                        self.label_query_result_2.setStyleSheet('color:red')
                 elif self.buttonGroup.checkedButton().text() == 'Update':
                     try:
                         mycursor = mydb.cursor()
@@ -278,8 +330,3 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.textEdit.clear()
         self.radioButton_select.setChecked(True)
         self.tableWidget_select_result_2.clear()
-
-
-
-
-

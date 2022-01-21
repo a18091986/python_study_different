@@ -1,7 +1,7 @@
 import pandas as pd
 # import datetime
 from datetime import date, datetime
-from not_for_github.db_connect import connect_to_db
+from NOT_FOR_GIT.db_connect import connect_to_db
 from mysql.connector import connect
 
 def save_into_excel():

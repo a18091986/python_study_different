@@ -1,24 +1,29 @@
 from youtube_dl import YoutubeDL
 
 def get_info_about_video(link):
-    print("For: ", link)
-    youtube_dl_opts = {
-        'ignoreerrors': True,
-        'quiet': False
-    }
+    try:
+        print("For: ", link)
+        youtube_dl_opts = {
+            'ignoreerrors': True,
+            'quiet': False
+        }
 
-    with YoutubeDL(youtube_dl_opts) as ydl:
-        info_dict = ydl.extract_info(link, download=False)
+        with YoutubeDL(youtube_dl_opts) as ydl:
+            info_dict = ydl.extract_info(link, download=False)
         # for item in info_dict:
     #     print(item)
     #     video_id = info_dict.get("id", None)
     #     video_views = info_dict.get("view_count", None)
     #     video_date = info_dict.get("upload_date", None)
     #     video_duration = info_dict.get("duration", None)
-        video_title = info_dict.get('title', None)
-        uploader = info_dict.get('uploader', None)
-        print(video_title, uploader)
-        return video_title, uploader
+            video_title = info_dict.get('title', None)
+            uploader = info_dict.get('uploader', None)
+            print(video_title, uploader)
+            return True, video_title, uploader
+    except Exception as e:
+        return False, e, False
+
+
 
 
 

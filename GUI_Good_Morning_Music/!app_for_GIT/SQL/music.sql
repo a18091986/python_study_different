@@ -1,4 +1,4 @@
-﻿create database if not exists music;
+﻿/* create database if not exists music;
 
 use music;
 
@@ -66,3 +66,20 @@ select * from music where date_when_send_into_group = DATE('2001-01-01');
 select DATE('2001-12-01')
 
 -- https://youtu.be/xSgT4ZtT5M0
+
+*/
+
+-- delete from music;
+-- alter table music auto_increment = 1;
+
+select * from music;
+
+select * from music order by id desc limit 5;
+
+select id from music order by id desc limit 1;
+
+select * from music where date_when_send_into_group like '2020-03-03';
+
+-- delete from music where id = (select t.id from (select id from music order by id desc limit 1) as t);
+
+select * from music order by id desc limit 5;

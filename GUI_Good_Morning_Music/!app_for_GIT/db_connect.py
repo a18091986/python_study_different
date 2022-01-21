@@ -9,11 +9,11 @@ def connect_to_db(host, port, user, password, database):
         password = password,
         database = database)
         print('Connected')
-        connection = True
+        connection = 'connected'
     except mc.Error as e:
         mydb = None
-        connection = e
-        print(e)
+        connection = f'Ошибка соединения с базой данных! \n {e}'
+        print(connection)
 
     return (mydb, connection)
 

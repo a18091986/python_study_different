@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime
 from datetime import date, datetime
-from not_for_github.db_connect import connect_to_db
+from NOT_FOR_GIT.db_connect import connect_to_db
 
 df = pd.read_excel('SQL/backup_music_db_20_01_2022_19_10_22.xlsx') #когда записвыаю из бэкапа
 # df = pd.read_excel('SQL/music_fin.xlsx') #когда записываю из music_fin
