@@ -1,4 +1,4 @@
-# import pandas as pd
+import pandas as pd
 from datetime import date, datetime
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem
 from main_window import Ui_MainWindow
@@ -7,16 +7,20 @@ from db_connect import connect_to_db
 from string_split import string_split
 
 
-# import mysql.connector
-
-
 class Music_management_system(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+
         self.setupUi(self)
         self.show()
 
-        self.pushButton_connect.clicked.connect(self.db_connect)
+        self.ip = ''
+        self.port = ''
+        self.database = ''
+        self.login = ''
+        self.password = ''
+
+        self.pushButton_connect.clicked.connect(self.db_connect_from_add_tab)
         self.pushButton_save.clicked.connect(self.add_row_in_db)
         self.pushButton_clear.clicked.connect(self.clear_add_into_db)
         self.pushButton_find_select.clicked.connect(self.select_from_db)
@@ -25,21 +29,22 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.pushButton_replace_clear.clicked.connect(self.clear_replace_by)
         self.pushButton_send_query.clicked.connect(self.execute_free_query)
         self.pushButton_clear_query.clicked.connect(self.clear_free_query)
+        self.pushButton_export.clicked.connect(self.export)
 
-    def db_connect(self):
-        ip = self.lineEdit_ip.text() if self.lineEdit_ip.text() else '192.168.2.165'
-        port = self.lineEdit_port.text() if self.lineEdit_port.text() else '3306'
-        login = self.lineEdit_login.text() if self.lineEdit_login.text() else 'admin'
-        password = self.lineEdit_pass.text() if self.lineEdit_pass.text() else ''
-        database = self.lineEdit_name_of_db.text() if self.lineEdit_name_of_db.text() else 'music'
+    def db_connect_from_add_tab(self):
+        self.ip = self.lineEdit_ip.text() if self.lineEdit_ip.text() else '192.168.2.165'
+        self.port = self.lineEdit_port.text() if self.lineEdit_port.text() else '3306'
+        self.login = self.lineEdit_login.text() if self.lineEdit_login.text() else 'admin'
+        self.password = self.lineEdit_pass.text() if self.lineEdit_pass.text() else ''
+        self.database = self.lineEdit_name_of_db.text() if self.lineEdit_name_of_db.text() else 'music'
 
-        self.lineEdit_ip.setText(ip)
-        self.lineEdit_port.setText(port)
-        self.lineEdit_login.setText(login)
-        self.lineEdit_pass.setText(password)
-        self.lineEdit_name_of_db.setText(database)
+        self.lineEdit_ip.setText(self.ip)
+        self.lineEdit_port.setText(self.port)
+        self.lineEdit_login.setText(self.login)
+        self.lineEdit_pass.setText(self.password)
+        self.lineEdit_name_of_db.setText(self.database)
 
-        mydb, connection = connect_to_db(ip, port, login, password, database)
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
         if connection == 'connected':
             print('Connection is Established')
             self.label_result.setText('Connected to DB')
@@ -74,8 +79,8 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         self.radioButton_sent_select_2.setChecked(True)
         self.checkBox_like.setChecked(True)
 
-    #
     def add_row_in_db(self):
+        self.label_result.setText('')
         self.link = self.lineEdit_link.text()
         self.genre = self.lineEdit_genre.text()
         if self.genre == '':
@@ -100,12 +105,15 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
         if status == True:
             pass
         else:
-            self.label_result.setText(f'Ошибка парсинга информации о видео \n {self.description}')
+            self.label_result.setText(f'Ошибка парсинга информации о видео \n {self.description}\nДобавлены данные: '
+                                      f'description: ошибка парсинга информации'
+                                      f'author: ошибка парсинга информации')
             self.label_result.setStyleSheet('color:red')
-            return False
+            self.description = 'Ошибка парсинга информации'
+            self.author = 'Ошибка парсинга информации'
 
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
-                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
 
         if connection == 'connected':
 
@@ -123,7 +131,7 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                     mycursor.execute(query, value)
                     mydb.commit()
                     print('Информация успешно записана')
-                    self.label_result.setText('Information added successfully')
+                    self.label_result.setText(self.label_result.text() + '\n' + 'Information added successfully')
                     self.label_result.setStyleSheet('color:green')
                     self.lineEdit_genre.setText('')
                     self.lineEdit_link.setText('')
@@ -137,7 +145,6 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
             self.label_result.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_result.setStyleSheet('color:red')
 
-    #
     def select_from_db(self):
         if self.lineEdit_date_select.text() != '':
             try:
@@ -178,10 +185,13 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
             else:
                 query_list.append(f'{item[0]} = {item[1]}')
         self.select_list = query_list.copy()
+
         query = f'select * from music where {" and ".join(query_list)}'
-        print(query)
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
-                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+
+        print(self.ip, self.port, self.login, self.password, self.database)
+
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
+
         if connection == 'connected':
             try:
                 mycursor = mydb.cursor()
@@ -211,7 +221,6 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
             self.label_edit_tab_result.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_edit_tab_result.setStyleSheet('color:red')
 
-    #
     def replace_by(self):
         if self.lineEdit_date_replace.text():
             try:
@@ -245,11 +254,11 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                 query_list_value.append((value[1]))
         for item in zip(query_list_column_name, query_list_value):
             query_list.append(f'{item[0]} = {item[1]}')
-        print(query_list)
+
         query = f'update music set {",".join(query_list)} where {" and ".join(self.select_list)}'
-        print(query)
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
-                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
+
         if connection == 'connected':
             try:
                 mycursor = mydb.cursor()
@@ -269,8 +278,9 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
 
     def execute_free_query(self):
         query = self.textEdit.toPlainText()
-        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
-                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
+
         if connection == 'connected':
             try:
                 if self.buttonGroup.checkedButton().text() == 'Select':
@@ -326,7 +336,58 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                 self.label_query_result_2.setText('Can\'t select information from DB' + '\n' + e)
                 self.label_query_result_2.setStyleSheet('color:red')
 
+        else:
+            self.label_query_result_2.setText('Not connected to DB' + '\n' + string_split(str(connection)))
+            self.label_query_result_2.setStyleSheet('color:red')
+
     def clear_free_query(self):
         self.textEdit.clear()
         self.radioButton_select.setChecked(True)
         self.tableWidget_select_result_2.clear()
+
+    def export(self):
+        """
+        для периодического бэкапа музыки из БД
+        """
+
+        query = f'select * from music'
+
+        path = self.lineEdit_path.text() if self.lineEdit_path.text() else 'C:/Users/admin/Desktop/'
+        filename = self.lineEdit_filename.text() if self.lineEdit_filename.text() else f'backup_music_db_{datetime.now().strftime("%d_%m_%Y_%H_%M_%S")}.xlsx'
+        mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
+
+        print(mydb)
+        print(connection)
+
+        if connection == 'connected':
+            try:
+                mycursor = mydb.cursor()
+                mycursor.execute(query)
+                result = mycursor.fetchall()
+                if result:
+                    try:
+                        df = pd.DataFrame(result, columns=['id', 'link', 'genre', 'channel_author', 'description',
+                                                           'date_when_send_into_group', 'whether_sent',
+                                                           'date_when_added_into_table'])
+                        df.to_excel(path+"/"+filename,
+                                    index=False)
+                        self.label_administration_tab_result.setText('Information was saved successfully')
+                        self.label_administration_tab_result.setStyleSheet('color:green')
+                    except:
+                        self.label_administration_tab_result.setText('Information wasn"t export')
+                        self.label_administration_tab_result.setStyleSheet('color:red')
+                else:
+                    self.label_administration_tab_result.setText('DB is Empty')
+                    self.label_administration_tab_result.setStyleSheet('color:red')
+
+            except Exception as exc:
+                self.label_administration_tab_result.setText(f'Information wasn"t export \n {string_split(str(exc))}')
+                self.label_administration_tab_result.setStyleSheet('color:red')
+
+        else:
+            print(connection)
+            self.label_administration_tab_result.setText('Not connected to DB' + '\n' + string_split(str(connection)))
+            self.label_administration_tab_result.setStyleSheet('color:red')
+
+
+
