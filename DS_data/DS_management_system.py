@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import datetime
+import pandas as pd
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem
 from main_window import Ui_MainWindow
 # from db_connect import connect_to_db
@@ -11,11 +12,13 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.show()
-        self.db_connect()
+        self.mydb = self.db_connect()
 
         self.pushButton_connect.clicked.connect(self.db_connect)
         self.pushButton_add_to_db_ds_info.clicked.connect(self.add_row_in_ds_info)
         self.pushButton_clear_add_to_ds_info.clicked.connect(self.clear_add_to_ds_info)
+        self.pushButton_backup_tables.clicked.connect(self.backup_ds_info)
+        self.comboBox_subject_level_1_add_to_ds.activated.connect(self.renew_combo_subject_level_2)
 
     #     self.pushButton_save.clicked.connect(self.add_row_in_db)
     #     self.pushButton_clear.clicked.connect(self.clear_add_into_db)
@@ -26,8 +29,56 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
     #     self.pushButton_send_query.clicked.connect(self.execute_free_query)
     #     self.pushButton_clear_query.clicked.connect(self.clear_free_query)
     #
-    def renew_combox(self, mydb):
-        query = 'select distinct Subject_level_1 from DS_info'
+
+    def backup_ds_info(self):
+        text_result = ''
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        if connection == True:
+            for item in [self.checkBox_DS_info_backup_local, self.checkBox_DS_info_backup_NAS,self.checkBox_DS_QA_backup_local, self.checkBox_DS_QA_backup_NAS]:
+                if item.isChecked():
+                    if item.text()[-4:] == 'INFO':
+                        table = 'DS_info'
+                    else:
+                        table = 'QA'
+                    path = f'{item.text()}/backup_{table}_db_{datetime.now().strftime("%d_%m_%Y_%H_%M_%S")}.xlsx'
+                    try:
+                        mycursor = mydb.cursor()
+                        mycursor.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}' AND table_schema = 'DS'")
+                        result = mycursor.fetchall()
+                        print(result)
+                        columns = [x[0] for x in result]
+                        mycursor.execute(f"SELECT * from {table}")
+                        result = mycursor.fetchall()
+                        df = pd.DataFrame(result, columns=columns)
+                        df.to_excel(path, index=False)
+                        text_result += f'- успешный backup {table} в {path}\n'
+                    except Exception as c:
+                        print(c)
+                        text_result += f'- Неудачный backup {table} в {path}\n'
+                    self.label_backup_result.setText(text_result)
+
+    def renew_combo_subject_level_2(self):
+        subject_level_1 = self.comboBox_subject_level_1_add_to_ds.currentText()
+        self.comboBox_subject_level_2_add_to_ds.clear()
+        query = f'select Subject_level_2 from Subject_level_2 where ' \
+                f'subject_level_1_id = (select id from subject_level_1 where subject_level_1 = "{subject_level_1}")'
+        print(query)
+        mycursor = self.mydb.cursor()
+        mycursor.execute(query)
+        result = mycursor.fetchall()
+        result.append(('',))
+        if result:
+            self.combo2 = sorted(tuple([x[0] for x in result]))
+            self.comboBox_subject_level_2_add_to_ds.addItems(self.combo2)
+            result_text = 'Combobox Subject_level_2 successfully filled'
+        else:
+            result_text = 'Subject_Level_2 in DS_info empty'
+        self.label_result_add_to_ds_info.setText(result_text)
+
+
+    def renew_combo_subject_level_1(self, mydb):
+        query = 'select distinct Subject_level_1 from Subject_level_1'
         mycursor = mydb.cursor()
         mycursor.execute(query)
         result = mycursor.fetchall()
@@ -38,16 +89,6 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             result_text = 'Combobox Subject_level_1 successfully filled'
         else:
             result_text = 'Subject_Level_1 in DS_info empty'
-        query = 'select distinct Subject_level_2 from DS_info'
-        mycursor.execute(query)
-        result = mycursor.fetchall()
-        result.append(('',))
-        if result:
-            self.combo2 = sorted(tuple([x[0] for x in result]))
-            self.comboBox_subject_level_2_add_to_ds.addItems(self.combo2)
-            result_text += '\nCombobox Subject_level_2 successfully filled'
-        else:
-            result_text += '\nSubject_Level_2 in DS_info empty'
         self.label_result_add_to_ds_info.setText(result_text)
 
 
@@ -69,7 +110,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             print('Connection is Established')
             self.label_result_connect_to_db.setText('Connected to DB')
             self.label_result_connect_to_db.setStyleSheet('color:green')
-            self.renew_combox(mydb)
+            self.renew_combo_subject_level_1(mydb)
+            return mydb
         else:
             print(connection)
             self.label_result_connect_to_db.setText('Not connected to DB' + '\n' + string_split(str(connection)))
@@ -89,7 +131,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.db_connect()
 
     def add_row_in_ds_info(self):
-
+        result = ''
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
         if connection == True:
             if self.comboBox_subject_level_1_add_to_ds.currentText():
@@ -98,15 +140,15 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 subject_level_1 = self.lineEdit_subject_level_1_ds_info.text()
             else:
                 subject_level_1 = ''
-                result = 'поле subject_level_1 не заполнено\n'
+                result += 'поле subject_level_1 не заполнено\n'
             if self.comboBox_subject_level_2_add_to_ds.currentText():
                 subject_level_2 = self.comboBox_subject_level_2_add_to_ds.currentText()
             elif self.lineEdit_subject_level_2_ds_info.text() and self.checkBox_subject_level_2_add_ds_info.isChecked():
                 subject_level_2 = self.lineEdit_subject_level_2_ds_info.text()
             else:
+                print('!!!')
                 subject_level_2 = ''
                 result += 'поле subject_level_2 не заполнено\n'
-
             subject_level_3 = self.lineEdit_subject_level_3_ds_info.text()
             source = self.lineEdit_source_ds_info.text()
             notes = self.lineEdit_notes_ds_info.text()
@@ -117,19 +159,35 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 self.label_result_add_to_ds_info.setText('Please fill all fields\n' + result)
                 self.label_result_add_to_ds_info.setStyleSheet('color:red')
             else:
-                print(good_for_question)
-                query_condition = {
-                    'Subject_level_1': (subject_level_1 != '', f"'{subject_level_1}'"),
-                    'Subject_level_2': (subject_level_2 != '', f"'{subject_level_2}'"),
-                    'Subject_level_3': (subject_level_3 != '', f"'{subject_level_3}'"),
-                    'Source': (source != '', f"'{source}'"),
-                    'Notes': (notes != '', f"'{notes}'"),
-                    'for_question': (True, f"'{good_for_question}'")
-                    }
-                print(query_condition)
                 try:
+                    query_SL1 = f'insert into Subject_level_1 (Subject_level_1) VALUES ("{subject_level_1}")'
                     mycursor = mydb.cursor()
-                    query_list = []
+                    mycursor.execute(query_SL1)
+                    query_id_SL1 = f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"'
+                    mycursor.execute(query_id_SL1)
+                    id_SL1 = mycursor.fetchall()[0][0]
+                    query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
+                                f'("{subject_level_2}", "{id_SL1}")'
+                                # f'where Subject_level_1_id = (select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}")'
+                    print(query_SL2)
+                    mycursor.execute(query_SL2)
+                    print('!!!')
+                    query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
+                    mycursor.execute(query_id_SL2)
+                    id_SL2 = mycursor.fetchall()[0][0]
+                    mydb.commit()
+                    print(id_SL1, id_SL2)
+
+                    query_condition = {
+                        'Subject_level_1_id': (id_SL1 != '', f"{id_SL1}"),
+                        'Subject_level_2_id': (id_SL2 != '', f"{id_SL2}"),
+                        'Subject_level_3': (subject_level_3 != '', f"'{subject_level_3}'"),
+                        'Source': (source != '', f"'{source}'"),
+                        'Notes': (notes != '', f"'{notes}'"),
+                        'for_question': (True, f"'{good_for_question}'")
+                        }
+                    print(query_condition)
+                    mycursor = mydb.cursor()
                     query_list_column_name = []
                     query_list_value = []
                     for key, value in query_condition.items():
@@ -145,7 +203,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     self.label_result_add_to_ds_info.setStyleSheet('color:green')
                     self.comboBox_subject_level_1_add_to_ds.clear()
                     self.comboBox_subject_level_2_add_to_ds.clear()
-                    self.renew_combox(mydb)
+                    self.renew_combo_subject_level_1(mydb)
                 except Exception as e:
                     e = string_split(str(e))
                     print(e)
