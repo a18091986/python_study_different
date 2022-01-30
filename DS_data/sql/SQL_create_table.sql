@@ -15,8 +15,13 @@ create table if not exists DS_info(
 );
 
 insert into DS_info (Subject_level_1, Subject_level_2) VALUES ('asdasd','asdasd');
+insert into DS_info (Subject_level_1, Subject_level_2) VALUES ('asdasd3','asdasd2');
+insert into DS_info (Subject_level_1, Subject_level_2) VALUES ('asdasd','asdasd');
+insert into DS_info (Subject_level_1, Subject_level_2) VALUES ('asd','asdasd');
 
 select * from DS_info;
+select distinct Subject_level_1 from DS_info;
+
 
 
 drop table if exists DS_exam;
