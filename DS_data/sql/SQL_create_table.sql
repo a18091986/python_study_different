@@ -32,6 +32,8 @@ select * from Subject_level_2;
 
 select Subject_level_2 from Subject_level_2;
 
+select Subject_level_2 from Subject_level_2 where subject_level_1_id = (select id from subject_level_1 where subject_level_1 = "11111111")
+
 
 drop table if exists DS_info;
 
@@ -76,4 +78,6 @@ select * from QA;
 
 
 SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'DS_info' AND table_schema = 'DS';
+
+
 

@@ -13,6 +13,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.show()
         self.mydb = self.db_connect()
+        self.renew_combo_subject_level_1()
 
         self.pushButton_connect.clicked.connect(self.db_connect)
         self.pushButton_add_to_db_ds_info.clicked.connect(self.add_row_in_ds_info)
@@ -59,15 +60,18 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     self.label_backup_result.setText(text_result)
 
     def renew_combo_subject_level_2(self):
+        mydb = self.db_connect()
         subject_level_1 = self.comboBox_subject_level_1_add_to_ds.currentText()
         self.comboBox_subject_level_2_add_to_ds.clear()
         query = f'select Subject_level_2 from Subject_level_2 where ' \
                 f'subject_level_1_id = (select id from subject_level_1 where subject_level_1 = "{subject_level_1}")'
         print(query)
-        mycursor = self.mydb.cursor()
+        mycursor = mydb.cursor()
         mycursor.execute(query)
         result = mycursor.fetchall()
+        print(result)
         result.append(('',))
+        print(result)
         if result:
             self.combo2 = sorted(tuple([x[0] for x in result]))
             self.comboBox_subject_level_2_add_to_ds.addItems(self.combo2)
@@ -77,8 +81,9 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.label_result_add_to_ds_info.setText(result_text)
 
 
-    def renew_combo_subject_level_1(self, mydb):
-        query = 'select distinct Subject_level_1 from Subject_level_1'
+    def renew_combo_subject_level_1(self):
+        mydb = self.db_connect()
+        query = 'select Subject_level_1 from Subject_level_1'
         mycursor = mydb.cursor()
         mycursor.execute(query)
         result = mycursor.fetchall()
@@ -110,12 +115,12 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             print('Connection is Established')
             self.label_result_connect_to_db.setText('Connected to DB')
             self.label_result_connect_to_db.setStyleSheet('color:green')
-            self.renew_combo_subject_level_1(mydb)
             return mydb
         else:
             print(connection)
             self.label_result_connect_to_db.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_result_connect_to_db.setStyleSheet('color:red')
+
 
     def clear_add_to_ds_info(self):
         self.lineEdit_subject_level_1_ds_info.clear()
@@ -130,6 +135,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.comboBox_subject_level_2_add_to_ds.clear()
         self.db_connect()
 
+
     def add_row_in_ds_info(self):
         result = ''
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
@@ -141,6 +147,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             else:
                 subject_level_1 = ''
                 result += 'поле subject_level_1 не заполнено\n'
+            print(subject_level_1)
             if self.comboBox_subject_level_2_add_to_ds.currentText():
                 subject_level_2 = self.comboBox_subject_level_2_add_to_ds.currentText()
             elif self.lineEdit_subject_level_2_ds_info.text() and self.checkBox_subject_level_2_add_ds_info.isChecked():
@@ -149,6 +156,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 print('!!!')
                 subject_level_2 = ''
                 result += 'поле subject_level_2 не заполнено\n'
+            print(subject_level_2)
             subject_level_3 = self.lineEdit_subject_level_3_ds_info.text()
             source = self.lineEdit_source_ds_info.text()
             notes = self.lineEdit_notes_ds_info.text()
@@ -159,24 +167,46 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 self.label_result_add_to_ds_info.setText('Please fill all fields\n' + result)
                 self.label_result_add_to_ds_info.setStyleSheet('color:red')
             else:
+                print('а теперь я тут')
                 try:
-                    query_SL1 = f'insert into Subject_level_1 (Subject_level_1) VALUES ("{subject_level_1}")'
                     mycursor = mydb.cursor()
-                    mycursor.execute(query_SL1)
-                    query_id_SL1 = f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"'
-                    mycursor.execute(query_id_SL1)
-                    id_SL1 = mycursor.fetchall()[0][0]
-                    query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
+                    mycursor.execute(f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"')
+                    result = mycursor.fetchall()
+                    if result:
+                        id_SL1 = result[0][0]
+                        mycursor = mydb.cursor()
+                        mycursor.execute(f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"')
+                        result = mycursor.fetchall()
+                        if result:
+                            id_SL2 = result[0][0]
+                        else:
+                            query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
+                                    f'("{subject_level_2}", "{id_SL1}")'
+                            mycursor.execute(query_SL2)
+                            query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
+                            mycursor.execute(query_id_SL2)
+                            id_SL2 = mycursor.fetchall()[0][0]
+                            mydb.commit()
+                        print(id_SL1, id_SL2)
+                    else:
+                        query_SL1 = f'insert into Subject_level_1 (Subject_level_1) VALUES ("{subject_level_1}")'
+                        print('тут я')
+                        mycursor = mydb.cursor()
+                        mycursor.execute(query_SL1)
+                        query_id_SL1 = f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"'
+                        mycursor.execute(query_id_SL1)
+                        id_SL1 = mycursor.fetchall()[0][0]
+                        query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
                                 f'("{subject_level_2}", "{id_SL1}")'
                                 # f'where Subject_level_1_id = (select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}")'
-                    print(query_SL2)
-                    mycursor.execute(query_SL2)
-                    print('!!!')
-                    query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
-                    mycursor.execute(query_id_SL2)
-                    id_SL2 = mycursor.fetchall()[0][0]
-                    mydb.commit()
-                    print(id_SL1, id_SL2)
+                        print(query_SL2)
+                        mycursor.execute(query_SL2)
+                        print('!!!')
+                        query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
+                        mycursor.execute(query_id_SL2)
+                        id_SL2 = mycursor.fetchall()[0][0]
+                        mydb.commit()
+                        print(id_SL1, id_SL2)
 
                     query_condition = {
                         'Subject_level_1_id': (id_SL1 != '', f"{id_SL1}"),
@@ -201,9 +231,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     print('Информация успешно записана')
                     self.label_result_add_to_ds_info.setText('Information added successfully')
                     self.label_result_add_to_ds_info.setStyleSheet('color:green')
-                    self.comboBox_subject_level_1_add_to_ds.clear()
-                    self.comboBox_subject_level_2_add_to_ds.clear()
-                    self.renew_combo_subject_level_1(mydb)
+                    self.clear_add_to_ds_info()
+                    self.renew_combo_subject_level_1()
                 except Exception as e:
                     e = string_split(str(e))
                     print(e)
