@@ -50,11 +50,16 @@ create table if not exists DS_info(
   FOREIGN KEY (Subject_level_2_id) REFERENCES Subject_level_2 (id)
 );
 
+ALTER TABLE DS_info ADD COLUMN RATING TINYINT UNSIGNED NOT NULL;
+ALTER TABLE DS_info ADD COLUMN VIEWED bool NOT NULL default 0;
+
 insert into DS_info (Subject_level_1_id, Subject_level_2_id, Subject_level_3) VALUES (1,1, 'sdfsdf');
+
+DELETE from DS_info where id = 6
+
 
 select * from DS_info;
 
-select distinct Subject_level_1 from DS_info;
 
 select * from DS_info where for_question = 1;
 
