@@ -9,6 +9,8 @@ create table if not exists Subject_level_1(
   Subject_level_1 varchar(300) unique not null 
 );
 
+delete from Subject_level_1 where Subject_level_1 = 'TEST';
+
 insert into Subject_level_1 (Subject_level_1) VALUES ('asd');
 insert into Subject_level_1 (Subject_level_1) VALUES ('adsdsd');
 insert into Subject_level_1 (Subject_level_1) VALUES ('ffffffff');
@@ -27,6 +29,8 @@ create table if not exists Subject_level_2(
 );
 
 insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES ('asdfdsf', 1);
+
+delete from Subject_level_2 where Subject_level_2 = 'TEST';
 
 select * from Subject_level_2;
 
@@ -52,10 +56,11 @@ create table if not exists DS_info(
 
 ALTER TABLE DS_info ADD COLUMN RATING TINYINT UNSIGNED NOT NULL;
 ALTER TABLE DS_info ADD COLUMN VIEWED bool NOT NULL default 0;
+ALTER TABLE DS_info MODIFY Notes varchar(2000);
 
 insert into DS_info (Subject_level_1_id, Subject_level_2_id, Subject_level_3) VALUES (1,1, 'sdfsdf');
 
-DELETE from DS_info where id = 6
+-- DELETE from DS_info where id = 13
 
 
 select * from DS_info;
