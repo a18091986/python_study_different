@@ -19,27 +19,66 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.pushButton_add_to_db_ds_info.clicked.connect(self.add_row_in_ds_info)
         self.pushButton_clear_add_to_ds_info.clicked.connect(self.clear_add_to_ds_info)
         self.pushButton_backup_tables.clicked.connect(self.backup_ds_info)
+        self.pushButton_backup_tables_all.clicked.connect(self.backup_ds_info_all)
+        self.pushButton_RESTORE.clicked.connect(self.restore_all)
         self.comboBox_subject_level_1_add_to_ds.activated.connect(self.renew_combo_subject_level_2)
 
-    #     self.pushButton_save.clicked.connect(self.add_row_in_db)
-    #     self.pushButton_clear.clicked.connect(self.clear_add_into_db)
-    #     self.pushButton_find_select.clicked.connect(self.select_from_db)
-    #     self.pushButton_select_clear.clicked.connect(self.clear_select_from_music_where)
-    #     self.pushButton_replace.clicked.connect(self.replace_by)
-    #     self.pushButton_replace_clear.clicked.connect(self.clear_replace_by)
-    #     self.pushButton_send_query.clicked.connect(self.execute_free_query)
-    #     self.pushButton_clear_query.clicked.connect(self.clear_free_query)
-    #
+    def restore_all(self):
+        text_result = ''
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        
+
+    def backup_ds_info_all(self):
+        text_result = ''
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
+                                         self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
+        checked_list = [self.checkBox_DS_info_backup_local, self.checkBox_DS_info_backup_NAS, \
+                        self.checkBox_DS_QA_backup_local, self.checkBox_DS_QA_backup_NAS, \
+                        self.checkBox_SL_1_backup_local, self.checkBox_SL_1_backup_NAS, \
+                        self.checkBox_SL_2_backup_local, self.checkBox_SL_2_backup_NAS,]
+        if connection == True:
+            for item in checked_list:
+                if item.text()[-4:] == 'INFO':
+                    table = 'DS_info'
+                elif item.text()[-1] == '1':
+                        table = 'Subject_level_1'
+                elif item.text()[-1] == '2':
+                     table = 'Subject_level_2'
+                else:
+                     table = 'QA'
+                path = f'{item.text()}/backup_{table}_db_{datetime.now().strftime("%d_%m_%Y_%H_%M_%S")}.xlsx'
+                try:
+                    mycursor = mydb.cursor()
+                    mycursor.execute(
+                    f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}' AND table_schema = 'DS'")
+                    result = mycursor.fetchall()
+                    print(result)
+                    columns = [x[0] for x in result]
+                    mycursor.execute(f"SELECT * from {table}")
+                    result = mycursor.fetchall()
+                    df = pd.DataFrame(result, columns=columns)
+                    df.to_excel(path, index=False)
+                    text_result += f'- успешный backup {table} в {path}\n'
+                except Exception as c:
+                    print(c)
+                    text_result += f'- Неудачный backup {table} в {path}\n'
+            self.label_backup_result.setText(text_result)
+            if 'Неудачный' in text_result:
+                self.label_backup_result.setStyleSheet('color:red')
+            else:
+                self.label_backup_result.setStyleSheet('color:green')
 
     def backup_ds_info(self):
         text_result = ''
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
                                          self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
-        if connection == True:
-            for item in [self.checkBox_DS_info_backup_local, self.checkBox_DS_info_backup_NAS, \
+        checked_list = [self.checkBox_DS_info_backup_local, self.checkBox_DS_info_backup_NAS, \
                         self.checkBox_DS_QA_backup_local, self.checkBox_DS_QA_backup_NAS, \
                         self.checkBox_SL_1_backup_local, self.checkBox_SL_1_backup_NAS, \
-                        self.checkBox_SL_2_backup_local, self.checkBox_SL_2_backup_NAS,]:
+                        self.checkBox_SL_2_backup_local, self.checkBox_SL_2_backup_NAS,]
+        if connection == True:
+            for item in checked_list:
                 if item.isChecked():
                     if item.text()[-4:] == 'INFO':
                         table = 'DS_info'
@@ -64,12 +103,11 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     except Exception as c:
                         print(c)
                         text_result += f'- Неудачный backup {table} в {path}\n'
-
-                    self.label_backup_result.setText(text_result)
-                    if 'Неудачный' in text_result:
-                        self.label_backup_result.setStyleSheet('color:red')
-                    else:
-                        self.label_backup_result.setStyleSheet('color:green')
+            self.label_backup_result.setText(text_result)
+            if 'Неудачный' in text_result:
+                self.label_backup_result.setStyleSheet('color:red')
+            else:
+                self.label_backup_result.setStyleSheet('color:green')
 
     def renew_combo_subject_level_2(self):
         mydb = self.db_connect()
