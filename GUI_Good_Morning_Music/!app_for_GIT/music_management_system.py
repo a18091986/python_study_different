@@ -352,7 +352,8 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
 
         query = f'select * from music'
 
-        path = self.lineEdit_path.text() if self.lineEdit_path.text() else 'C:/Users/admin/Desktop/'
+        path1 = self.lineEdit_path.text() if self.lineEdit_path.text() else 'C:\\Users\\admin\\Desktop\\PYTHON_2022\\python_study_different\\GUI_Good_Morning_Music\\NOT_FOR_GIT\\backup_music'
+        path2 = self.lineEdit_path.text() if self.lineEdit_path.text() else '\\\\192.168.2.222\\study\\!my_projects\\!!!backup!!!\\music'
         filename = self.lineEdit_filename.text() if self.lineEdit_filename.text() else f'backup_music_db_{datetime.now().strftime("%d_%m_%Y_%H_%M_%S")}.xlsx'
         mydb, connection = connect_to_db(self.ip, self.port, self.login, self.password, self.database)
 
@@ -369,8 +370,8 @@ class Music_management_system(QMainWindow, Ui_MainWindow):
                         df = pd.DataFrame(result, columns=['id', 'link', 'genre', 'channel_author', 'description',
                                                            'date_when_send_into_group', 'whether_sent',
                                                            'date_when_added_into_table'])
-                        df.to_excel(path+"/"+filename,
-                                    index=False)
+                        df.to_excel(path1+"/"+filename, index=False)
+                        df.to_excel(path2 + "/" + filename, index=False)
                         self.label_administration_tab_result.setText('Information was saved successfully')
                         self.label_administration_tab_result.setStyleSheet('color:green')
                     except:

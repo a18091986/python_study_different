@@ -21,7 +21,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1415,8 +1415,13 @@
               <height>40</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
             <property name="placeholderText">
-             <string>TYPE HERE PATH TO EXPORT  BY DEFAULT C:\Users\admin</string>
+             <string>PATH BY DEFAULT GUI_Good_Morning_Music/NOT_FOR_GIT/backup_music and NAS</string>
             </property>
            </widget>
           </item>

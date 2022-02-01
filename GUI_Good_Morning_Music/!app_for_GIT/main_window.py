@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file '.\!app_for_GIT\ui\maingui.ui'
+# Form implementation generated from reading ui file '!app_for_GIT\ui\maingui.ui'
 #
 # Created by: PyQt6 UI code generator 6.2.2
 #
@@ -679,6 +679,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.lineEdit_path = QtWidgets.QLineEdit(self.tab_4)
         self.lineEdit_path.setMinimumSize(QtCore.QSize(0, 40))
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.lineEdit_path.setFont(font)
         self.lineEdit_path.setObjectName("lineEdit_path")
         self.horizontalLayout_10.addWidget(self.lineEdit_path)
         self.lineEdit_filename = QtWidgets.QLineEdit(self.tab_4)
@@ -706,7 +709,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -791,7 +794,7 @@ class Ui_MainWindow(object):
         self.pushButton_send_query.setText(_translate("MainWindow", "Send Query"))
         self.pushButton_clear_query.setText(_translate("MainWindow", "Clear"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Free query"))
-        self.lineEdit_path.setPlaceholderText(_translate("MainWindow", "TYPE HERE PATH TO EXPORT  BY DEFAULT C:\\Users\\admin"))
+        self.lineEdit_path.setPlaceholderText(_translate("MainWindow", "PATH BY DEFAULT GUI_Good_Morning_Music/NOT_FOR_GIT/backup_music and NAS"))
         self.lineEdit_filename.setPlaceholderText(_translate("MainWindow", "TYPE HERE FILE NAME BY DEFAULT BACKUP_DATE_TIME"))
         self.pushButton_export.setText(_translate("MainWindow", "Export_music_from_db"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("MainWindow", "Administration"))
