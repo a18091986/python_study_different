@@ -22,12 +22,47 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.pushButton_backup_tables_all.clicked.connect(self.backup_ds_info_all)
         self.pushButton_RESTORE.clicked.connect(self.restore_all)
         self.comboBox_subject_level_1_add_to_ds.activated.connect(self.renew_combo_subject_level_2)
+        self.pushButton_RESTORE.clicked.connect(self.restore_all)
 
     def restore_all(self):
-        text_result = ''
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
                                          self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
-        
+
+        for item in [self.lineEdit_restore_SL1, self.lineEdit_restore_SL2, self.lineEdit_restore_DS_info]:
+            path = item.text()
+            if item.objectName() == 'lineEdit_restore_SL1':
+                fpath = f'NOT_FOR_GIT/backup/subject_level_1/{path}'
+                table = 'Subject_level_1'
+            elif item.objectName() == 'lineEdit_restore_SL2':
+                fpath = f'NOT_FOR_GIT/backup/subject_level_2/{path}'
+                table = 'Subject_level_2'
+            elif item.objectName() == 'lineEdit_restore_DS_info':
+                fpath = f'NOT_FOR_GIT/backup/INFO/{path}'
+                table = 'DS_info'
+            else:
+                fpath = f'NOT_FOR_GIT/backup/QA/{path}'
+                table = 'QA'
+            df = pd.read_excel(fpath)
+            print(df)
+            for row in df.itertuples():
+                try:
+                    if table == 'Subject_level_1':
+                        query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]}, '{row[2]}')"
+                    elif table == 'Subject_level_2':
+                        query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},'{row[3]}')"
+                    elif table == 'DS_info':
+                        query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},{row[3]}," \
+                            f"'{row[4]}','{row[5]}','{row[6]}','{row[7]}','{row[8]}', '{row[9]}', '{row[10]}')"
+                    # else:
+                    #     query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},{row[3]}," \
+                    #             f"'{row[4]}','{row[5]}','{row[6]}','{row[7]}','{row[8]}',{row[9]})"
+                    mycursor = mydb.cursor()
+                    print(query)
+                    mycursor.execute(query)
+                    mydb.commit()
+                    print('Информация успешно записана')
+                except Exception as e:
+                    print(e)
 
     def backup_ds_info_all(self):
         text_result = ''
