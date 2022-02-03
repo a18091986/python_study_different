@@ -217,8 +217,9 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.comboBox_subject_level_2_add_to_ds.clear()
         self.checkBox_viewed_add_to_ds_info_3.setChecked(False)
         self.comboBox_rating_add_to_ds_info.setCurrentIndex(0)
+        self.checkBox_linktogooglecolab_add_to_ds_info.setChecked(False)
+        self.checkBox_fillanswer_add_to_ds_info_2.setChecked(False)
         self.renew_combo_subject_level_1()
-
 
     def add_row_in_ds_info(self):
         result = ''
@@ -242,8 +243,14 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 result += 'поле subject_level_2 не заполнено\n'
             print(subject_level_2)
             subject_level_3 = self.lineEdit_subject_level_3_ds_info.text()
-            source = self.lineEdit_source_ds_info.text().replace('\\', '\\\\')
-            notes = self.lineEdit_notes_ds_info.text()
+            if not self.lineEdit_source_ds_info.text() and self.checkBox_linktogooglecolab_add_to_ds_info.isChecked():
+                source = 'https://colab.research.google.com/drive/1-f34MB1y6Ytuom1Ja6Wlz7hIetpf7wzs?usp=sharing'
+            else:
+                source = self.lineEdit_source_ds_info.text().replace('\\', '\\\\')
+            if not self.lineEdit_notes_ds_info.text() and self.checkBox_fillanswer_add_to_ds_info_2.isChecked():
+                notes = 'заполнить ответ'
+            else:
+                notes = self.lineEdit_notes_ds_info.text()
             good_for_question = 1 if self.checkBox_good_for_question_add_to_ds_info.isChecked() else 0
             viewed = 1 if self.checkBox_viewed_add_to_ds_info_3.isChecked() else 0
             rating = self.comboBox_rating_add_to_ds_info.currentText()
@@ -253,7 +260,6 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                 self.label_result_add_to_ds_info.setText('Please fill all fields\n' + result)
                 self.label_result_add_to_ds_info.setStyleSheet('color:red')
             else:
-                print('а теперь я тут')
                 try:
                     mycursor = mydb.cursor()
                     mycursor.execute(f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"')
@@ -261,22 +267,27 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     if result:
                         id_SL1 = result[0][0]
                         mycursor = mydb.cursor()
-                        mycursor.execute(f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"')
+                        mycursor.execute(f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}" and Subject_level_1_id = "{id_SL1}"')
+                        print(f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}" and Subject_level_1_id = "{id_SL1}"')
                         result = mycursor.fetchall()
                         if result:
                             id_SL2 = result[0][0]
+                            print(id_SL2)
                         else:
                             query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
                                     f'("{subject_level_2}", "{id_SL1}")'
-                            mycursor.execute(query_SL2)
-                            query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
-                            mycursor.execute(query_id_SL2)
-                            id_SL2 = mycursor.fetchall()[0][0]
-                            mydb.commit()
-                        print(id_SL1, id_SL2)
+                            try:
+                                mycursor.execute(query_SL2)
+                                query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
+                                print(query_SL2)
+                                mycursor.execute(query_id_SL2)
+                                id_SL2 = mycursor.fetchall()[0][0]
+                                mydb.commit()
+                            except Exception as e:
+                                print(e)
+
                     else:
                         query_SL1 = f'insert into Subject_level_1 (Subject_level_1) VALUES ("{subject_level_1}")'
-                        print('тут я')
                         mycursor = mydb.cursor()
                         mycursor.execute(query_SL1)
                         query_id_SL1 = f'select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}"'
@@ -284,15 +295,11 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         id_SL1 = mycursor.fetchall()[0][0]
                         query_SL2 = f'insert into Subject_level_2 (Subject_level_2, Subject_level_1_id) VALUES' \
                                 f'("{subject_level_2}", "{id_SL1}")'
-                                # f'where Subject_level_1_id = (select id from Subject_level_1 where Subject_level_1 = "{subject_level_1}")'
-                        print(query_SL2)
                         mycursor.execute(query_SL2)
-                        print('!!!')
                         query_id_SL2 = f'select id from Subject_level_2 where Subject_level_2 = "{subject_level_2}"'
                         mycursor.execute(query_id_SL2)
                         id_SL2 = mycursor.fetchall()[0][0]
                         mydb.commit()
-                        print(id_SL1, id_SL2)
 
                     query_condition = {
                         'Subject_level_1_id': (id_SL1 != '', f"{id_SL1}"),
@@ -304,22 +311,17 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         'VIEWED': (True, f"'{viewed}'"),
                         'RATING': (True, f"'{rating}'"),
                         }
-                    print('***')
-                    print(query_condition)
                     query_for_examination_SL3 = f"select Source, Notes from DS_info where Subject_level_3 = '{subject_level_3}' " \
                                                 f"and Subject_level_2_id = '{id_SL2}' and Subject_level_1_id = '{id_SL1}'"
-                    print(query_for_examination_SL3)
                     mycursor = mydb.cursor()
                     mycursor.execute(query_for_examination_SL3)
                     result = mycursor.fetchall()
-                    print(result)
                     if result:
                         text_before_source = result[0][0] + '\n'
                         text_before_notes = result[0][1] + '\n'
                         new_text_source = text_before_source + f"{source}"
                         new_text_notes = text_before_notes + f"{notes}"
                         query_condition.update([('Source', (source != '', f"'{new_text_source}'")), ('Notes', (notes != '', f"'{new_text_notes}'"))])
-                        print(query_condition)
                         mycursor = mydb.cursor()
                         query_list_column_name = []
                         query_list_value = []
@@ -333,7 +335,6 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         query = f'update DS_info set {",".join(query_list)} where ' \
                                 f'Subject_level_3 = "{subject_level_3}" ' \
                                 f'and Subject_level_2_id = "{id_SL2}" and Subject_level_1_id = "{id_SL1}"'
-                        print(query)
                         mycursor.execute(query)
                         mydb.commit()
                         print('Информация обновлена')
@@ -349,7 +350,6 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                                     query_list_column_name.append(key)
                                     query_list_value.append(value[1])
                         query = f'insert into DS_info ({",".join(query_list_column_name)}) VALUES ({",".join(query_list_value)})'
-                        print(query)
                         mycursor.execute(query)
                         mydb.commit()
                         print('Информация успешно записана')
