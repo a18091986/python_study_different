@@ -1,6 +1,8 @@
 from datetime import datetime
 import pandas as pd
-from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt6.QtWidgets import QMainWindow, QLabel, QHBoxLayout
+from PyQt6 import QtCore
+from PyQt6.QtGui import QPixmap
 from main_window import Ui_MainWindow
 # from db_connect import connect_to_db
 from NOT_FOR_GIT.db_connect_ import connect_to_db
@@ -23,6 +25,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.pushButton_RESTORE.clicked.connect(self.restore_all)
         self.comboBox_subject_level_1_add_to_ds.activated.connect(self.renew_combo_subject_level_2)
         self.pushButton_RESTORE.clicked.connect(self.restore_all)
+        self.pushButton_img.clicked.connect(self.load_image)
+
 
     def restore_all(self):
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
@@ -365,6 +369,11 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             print(connection)
             self.label_result_add_to_ds_info.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_result_add_to_ds_info.setStyleSheet('color:red')
+
+    def load_image(self):
+        myPixmap = QPixmap('2.jpg')
+        myScaledPixmap = myPixmap.scaled(self.label_img.size())
+        self.label_img.setPixmap(myScaledPixmap)
 
 
 

@@ -36,7 +36,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <property name="sizePolicy">
@@ -1722,6 +1722,47 @@
          </spacer>
         </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="tab_7">
+       <attribute name="title">
+        <string>TEST</string>
+       </attribute>
+       <widget class="QGraphicsView" name="graphicsView">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>70</y>
+          <width>471</width>
+          <height>351</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_img">
+        <property name="geometry">
+         <rect>
+          <x>550</x>
+          <y>570</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>IMAGE</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_img">
+        <property name="geometry">
+         <rect>
+          <x>586</x>
+          <y>72</y>
+          <width>511</width>
+          <height>341</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </item>

@@ -647,6 +647,18 @@ class Ui_MainWindow(object):
         spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_8.addItem(spacerItem6)
         self.tabWidget.addTab(self.tab_6, "")
+        self.tab_7 = QtWidgets.QWidget()
+        self.tab_7.setObjectName("tab_7")
+        self.graphicsView = QtWidgets.QGraphicsView(self.tab_7)
+        self.graphicsView.setGeometry(QtCore.QRect(40, 70, 471, 351))
+        self.graphicsView.setObjectName("graphicsView")
+        self.pushButton_img = QtWidgets.QPushButton(self.tab_7)
+        self.pushButton_img.setGeometry(QtCore.QRect(550, 570, 75, 23))
+        self.pushButton_img.setObjectName("pushButton_img")
+        self.label_img = QtWidgets.QLabel(self.tab_7)
+        self.label_img.setGeometry(QtCore.QRect(586, 72, 511, 341))
+        self.label_img.setObjectName("label_img")
+        self.tabWidget.addTab(self.tab_7, "")
         self.verticalLayout_6.addWidget(self.tabWidget)
         spacerItem7 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
         self.verticalLayout_6.addItem(spacerItem7)
@@ -660,7 +672,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(6)
         self.comboBox_rating_add_to_ds_info.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -730,6 +742,9 @@ class Ui_MainWindow(object):
         self.lineEdit_restore_DS_info_2.setPlaceholderText(_translate("MainWindow", "file name in NOT_FOR_GIT/backup/QA"))
         self.pushButton_RESTORE.setText(_translate("MainWindow", "PushButton"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), _translate("MainWindow", "DB restore"))
+        self.pushButton_img.setText(_translate("MainWindow", "IMAGE"))
+        self.label_img.setText(_translate("MainWindow", "TextLabel"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), _translate("MainWindow", "TEST"))
 
 
 if __name__ == "__main__":

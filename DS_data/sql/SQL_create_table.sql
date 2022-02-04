@@ -26,6 +26,8 @@ create table if not exists Subject_level_2(
   FOREIGN KEY (Subject_level_1_id) REFERENCES Subject_level_1 (id)
 );
 
+ALTER TABLE Subject_level_2 DROP INDEX Subject_level_2;
+
 update Subject_level_2 set Subject_level_2 = 'Алгоритмы классификации (кластеризации)' where Subject_level_2 = 'Алгоритмы классификации';  
 update Subject_level_2 set Subject_level_2 = 'Обучающий курс' where Subject_level_2 = 'обучающий курс';  
 update Subject_level_2 set Subject_level_2 = 'Manifold Learning (понижение размерности)' where Subject_level_2 = 'Понижение размерности (пространство признаков)';  
@@ -64,14 +66,24 @@ INSERT INTO DS_info (id,Subject_level_1_id,Subject_level_2_id,Subject_level_3,So
 
 insert into DS_info (Subject_level_1_id, Subject_level_2_id, Subject_level_3) VALUES (1,1, 'sdfsdf');
 
-DELETE from DS_info where id = 6
+DELETE from DS_info where id >= 154;
 
+Select * from DS_info where id >= 154;
 
 select * from DS_info;
 
-select * from DS_info where Subject_level_2_id = 15;
+select * from DS_info where Subject_level_2_id = 6;
+
+select * from Subject_level_1;
+select * from Subject_level_2;
+
+select * from Subject_level_2 where Subject_level_1_id = 4;
+
+Select * from Subject_level_2 where subject_level_1_id = (select id from subject_level_1 where subject_level_1 = 'Финансы');
+
 
 update DS_info set Subject_level_2_id = (select id from Subject_level_2 where Subject_level_2 = 'Manifold Learning')
+update DS_info set Subject_level_2_id = 20 where id = 145;
 select * from DS_info where Subject_level_2_id = (select id from Subject_level_2 where Subject_level_2 = 'Понижение размерности (пространство признаков)');
 select * from DS_info where Subject_level_2_id = 15;
 select * from Subject_level_2 where Subject_level_2 = 'Manifold Learning';
