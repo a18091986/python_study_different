@@ -315,17 +315,25 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         'VIEWED': (True, f"'{viewed}'"),
                         'RATING': (True, f"'{rating}'"),
                         }
-                    query_for_examination_SL3 = f"select Source, Notes from DS_info where Subject_level_3 = '{subject_level_3}' " \
-                                                f"and Subject_level_2_id = '{id_SL2}' and Subject_level_1_id = '{id_SL1}'"
+                    query_for_examination_SL3 = f"select Source, Notes from DS_info where " \
+                                                f"Source = '{source}' and " \
+                                                f"Subject_level_3 = '{subject_level_3}' and " \
+                                                f"Subject_level_2_id = '{id_SL2}' and " \
+                                                f"Subject_level_1_id = '{id_SL1}'"
                     mycursor = mydb.cursor()
+                    print('1')
                     mycursor.execute(query_for_examination_SL3)
+                    print('2')
                     result = mycursor.fetchall()
+                    print('3')
                     if result:
-                        text_before_source = result[0][0] + '\n'
-                        text_before_notes = result[0][1] + '\n'
-                        new_text_source = text_before_source + f"{source}"
-                        new_text_notes = text_before_notes + f"{notes}"
-                        query_condition.update([('Source', (source != '', f"'{new_text_source}'")), ('Notes', (notes != '', f"'{new_text_notes}'"))])
+                        text_before_notes = result[0][1]
+                        if text_before_notes:
+                            new_text_notes = text_before_notes + '\n' + f"{notes}"
+                        else:
+                            new_text_notes = f'{notes}'
+                        query_condition.update([('Notes', (notes != '', f"'{new_text_notes}'"))])
+                        print(query_condition)
                         mycursor = mydb.cursor()
                         query_list_column_name = []
                         query_list_value = []
