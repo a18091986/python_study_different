@@ -1,6 +1,7 @@
 import os
 import random
 import subprocess
+import time
 from datetime import datetime
 import pandas as pd
 from PyQt6.QtWidgets import QMainWindow, QLabel, QHBoxLayout, QFileDialog
@@ -10,6 +11,7 @@ from main_window import Ui_MainWindow
 # from db_connect import connect_to_db
 from NOT_FOR_GIT.db_connect_ import connect_to_db
 from string_split import string_split
+import winshell
 
 
 class DS_management_system(QMainWindow, Ui_MainWindow):
@@ -34,9 +36,11 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.pushButton_show_answer.clicked.connect(self.show_answer)
 
 
+        self.desktop = winshell.desktop()
+        self.tempdir = r'C:\TempForDS'
         self.filename_to_db = ''
         self.fileformat_to_db = ''
-        self.file = b''
+        self.file = ''
 
     def restore_all(self):
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
@@ -243,11 +247,14 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.renew_combo_subject_level_1()
 
     def get_filename_and_format(self):
-        path = QFileDialog.getOpenFileName(self, 'Open File', r'C:/', 'All Files (*)')
-        filepath_to_db = path[0]
-        if path:
-            self.filename_to_db, self.fileformat_to_db = path[0].split(r'/')[-1].split('.')
-            self.convert_to_binary_data(filepath_to_db)
+        try:
+            path = QFileDialog.getOpenFileName(self, 'Open File', rf'{self.desktop}', 'All Files (*)')
+            if path:
+                filepath_to_db = path[0]
+                self.filename_to_db, self.fileformat_to_db = path[0].split(r'/')[-1].split('.')
+                self.convert_to_binary_data(filepath_to_db)
+        except Exception as e:
+            print(e)
 
     def convert_to_binary_data(self, path):
         # Преобразование данных в двоичный формат
@@ -260,21 +267,24 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.write_to_file(self.file, file_name_format)
 
     def write_to_file(self, data, filename):
-        # Преобразование двоичных данных в нужный формат
-        with open(filename, 'wb') as file:
-                file.write(data)
-        self.open_file(self.fileformat_to_db, filename)
+        # Преобразование двоичных данных в нужный формат, сохранение в C:/TempForDS
+        path = '\\'.join([self.tempdir, filename])
+        with open(path, 'wb') as file:
+            file.write(data)
+        self.open_file(self.fileformat_to_db, path)
 
     def open_file(self, format, path):
         if format == 'ipynb':
-            exec = rf"jupyter notebook {path}"
+            exec = rf"nbopen {path}"
             print(exec)
-            subprocess.run(exec)
+            subprocess.Popen(exec)
         else:
             os.startfile(rf"{path}", "open")
 
     def select_random_from_db(self):
-        query = """select * from ds_info where for_question = 0 and file is NOT NULL"""
+        for item in os.listdir(self.tempdir)[1:]:
+            os.remove('//'.join([self.tempdir, item]))
+        query = """select * from ds_info where for_question = 1 and file is NOT NULL"""
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), 'test_for_blob')
         if connection == True:
             try:
@@ -408,7 +418,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         'RATING': (True, f"{rating}"),
                         'filename': (self.filename_to_db != '', f"{self.filename_to_db}"),
                         'fileformat': (self.fileformat_to_db != '', f"{self.fileformat_to_db}"),
-                        'file': (self.file != '', f"{self.file}")
+                        'file': (self.file != '', self.file)
                         }
                     query_for_examination_SL3 = f"select Source, Notes from DS_info where " \
                                                 f"Source = '{source}' and " \
@@ -476,10 +486,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
 
         self.filename_to_db = ''
         self.fileformat_to_db = ''
-        self.file = ''
-
-
-
+        self.file = None
 
     def load_image(self):
         myPixmap = QPixmap('2.jpg')

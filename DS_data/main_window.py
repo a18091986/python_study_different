@@ -688,7 +688,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         self.comboBox_rating_add_to_ds_info.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
