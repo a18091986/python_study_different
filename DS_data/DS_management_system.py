@@ -1,6 +1,9 @@
+import os
+import random
+import subprocess
 from datetime import datetime
 import pandas as pd
-from PyQt6.QtWidgets import QMainWindow, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QLabel, QHBoxLayout, QFileDialog
 from PyQt6 import QtCore
 from PyQt6.QtGui import QPixmap
 from main_window import Ui_MainWindow
@@ -26,7 +29,14 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.comboBox_subject_level_1_add_to_ds.activated.connect(self.renew_combo_subject_level_2)
         self.pushButton_RESTORE.clicked.connect(self.restore_all)
         self.pushButton_img.clicked.connect(self.load_image)
+        self.pushButton_setfile.clicked.connect(self.get_filename_and_format)
+        self.pushButton_get_question.clicked.connect(self.select_random_from_db)
+        self.pushButton_show_answer.clicked.connect(self.show_answer)
 
+
+        self.filename_to_db = ''
+        self.fileformat_to_db = ''
+        self.file = b''
 
     def restore_all(self):
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
@@ -37,6 +47,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             if item.objectName() == 'lineEdit_restore_SL1':
                 fpath = f'NOT_FOR_GIT/backup/subject_level_1/{path}'
                 table = 'Subject_level_1'
+                df = pd.read_excel(fpath, header = None)#names=['asdfs','sdf','sdfs'])
+                df.set_axis(['id', 'Subject_level_1'], axis = 'columns', inplace=True)
             elif item.objectName() == 'lineEdit_restore_SL2':
                 fpath = f'NOT_FOR_GIT/backup/subject_level_2/{path}'
                 table = 'Subject_level_2'
@@ -46,9 +58,10 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             else:
                 fpath = f'NOT_FOR_GIT/backup/QA/{path}'
                 table = 'QA'
-            df = pd.read_excel(fpath)
-            print(df)
+            # df = pd.read_excel(fpath)
+            # print(df)
             for row in df.itertuples():
+                print(row)
                 try:
                     if table == 'Subject_level_1':
                         query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]}, '{row[2]}')"
@@ -56,7 +69,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},'{row[3]}')"
                     elif table == 'DS_info':
                         query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},{row[3]}," \
-                            f"'{row[4]}','{row[5]}','{row[6]}','{row[7]}','{row[8]}', '{row[9]}', '{row[10]}')"
+                            f"'{row[4]}','{row[5]}','{row[6]}','{row[7]}','{row[8]}'," \
+                            f" '{row[9]}', '{row[10]}', '{row[11]}', '{row[12]}','{row[13]}')"
                     # else:
                     #     query = f"INSERT INTO {table} ({','.join(df.columns)}) VALUES ({row[1]},{row[2]},{row[3]}," \
                     #             f"'{row[4]}','{row[5]}','{row[6]}','{row[7]}','{row[8]}',{row[9]})"
@@ -66,6 +80,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     mydb.commit()
                     print('Информация успешно записана')
                 except Exception as e:
+                    pass
                     print(e)
 
     def backup_ds_info_all(self):
@@ -98,6 +113,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                     result = mycursor.fetchall()
                     df = pd.DataFrame(result, columns=columns)
                     df.to_excel(path, index=False)
+                    df1 = pd.DataFrame(result)
+                    df1.to_excel(path, index=False)
                     text_result += f'- успешный backup {table} в {path}\n'
                 except Exception as c:
                     print(c)
@@ -225,6 +242,67 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.checkBox_fillanswer_add_to_ds_info_2.setChecked(False)
         self.renew_combo_subject_level_1()
 
+    def get_filename_and_format(self):
+        path = QFileDialog.getOpenFileName(self, 'Open File', r'C:/', 'All Files (*)')
+        filepath_to_db = path[0]
+        if path:
+            self.filename_to_db, self.fileformat_to_db = path[0].split(r'/')[-1].split('.')
+            self.convert_to_binary_data(filepath_to_db)
+
+    def convert_to_binary_data(self, path):
+        # Преобразование данных в двоичный формат
+        with open(path, 'rb') as file:
+            self.file = file.read()
+
+    def show_answer(self):
+        file_name_format = '.'.join([self.filename_to_db,self.fileformat_to_db])
+        print(file_name_format)
+        self.write_to_file(self.file, file_name_format)
+
+    def write_to_file(self, data, filename):
+        # Преобразование двоичных данных в нужный формат
+        with open(filename, 'wb') as file:
+                file.write(data)
+        self.open_file(self.fileformat_to_db, filename)
+
+    def open_file(self, format, path):
+        if format == 'ipynb':
+            exec = rf"jupyter notebook {path}"
+            print(exec)
+            subprocess.run(exec)
+        else:
+            os.startfile(rf"{path}", "open")
+
+    def select_random_from_db(self):
+        query = """select * from ds_info where for_question = 0 and file is NOT NULL"""
+        mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), 'test_for_blob')
+        if connection == True:
+            try:
+                mycursor = mydb.cursor()
+                mycursor.execute(query)
+                result = mycursor.fetchall()
+                question = random.choice(result)
+                if question:
+                    for i in question:
+                        print(i)
+                    self.textBrowser_for_question.setText(f'{str(question[3])}')
+                    self.textBrowser_for_question.setText(f'{str(question[4])}')
+                    self.filename_to_db = question[5]
+                    self.fileformat_to_db = question[6]
+                    self.file = question[7]
+                else:
+                    self.textBrowser_for_question.setText('Nothing find')
+                    self.textBrowser_for_question.setStyleSheet('color:red')
+            except Exception as e:
+                e = string_split(str(e))
+                print(e)
+                self.textBrowser_for_question.setText('Can\'t select information from DB' + '\n' + e)
+                self.textBrowser_for_question.setStyleSheet('color:red')
+        else:
+            print(connection)
+            self.textBrowser_for_question.setText('Not connected to DB' + '\n' + string_split(str(connection)))
+            self.textBrowser_for_question.setStyleSheet('color:red')
+
     def add_row_in_ds_info(self):
         result = ''
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(), self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
@@ -305,15 +383,32 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                         id_SL2 = mycursor.fetchall()[0][0]
                         mydb.commit()
 
+                    # query_condition = {
+                    #     'Subject_level_1_id': (id_SL1 != '', f"{id_SL1}"),
+                    #     'Subject_level_2_id': (id_SL2 != '', f"{id_SL2}"),
+                    #     'Subject_level_3': (subject_level_3 != '', f"'{subject_level_3}'"),
+                    #     'Source': (source != '', f"'{source}'"),
+                    #     'Notes': (notes != '', f"'{notes}'"),
+                    #     'for_question': (True, f"'{good_for_question}'"),
+                    #     'VIEWED': (True, f"'{viewed}'"),
+                    #     'RATING': (True, f"'{rating}'"),
+                    #     'filename': (self.filename_to_db != '', f"'{self.filename_to_db}'"),
+                    #     'fileformat': (self.fileformat_to_db != '', f"'{self.fileformat_to_db}'"),
+                    #     'file': (self.file != '', f"'{self.file}'")
+                    #     }
+
                     query_condition = {
                         'Subject_level_1_id': (id_SL1 != '', f"{id_SL1}"),
                         'Subject_level_2_id': (id_SL2 != '', f"{id_SL2}"),
-                        'Subject_level_3': (subject_level_3 != '', f"'{subject_level_3}'"),
-                        'Source': (source != '', f"'{source}'"),
-                        'Notes': (notes != '', f"'{notes}'"),
-                        'for_question': (True, f"'{good_for_question}'"),
-                        'VIEWED': (True, f"'{viewed}'"),
-                        'RATING': (True, f"'{rating}'"),
+                        'Subject_level_3': (subject_level_3 != '', f"{subject_level_3}"),
+                        'Source': (source != '', f"{source}"),
+                        'Notes': (notes != '', f"{notes}"),
+                        'for_question': (True, f"{good_for_question}"),
+                        'VIEWED': (True, f"{viewed}"),
+                        'RATING': (True, f"{rating}"),
+                        'filename': (self.filename_to_db != '', f"{self.filename_to_db}"),
+                        'fileformat': (self.fileformat_to_db != '', f"{self.fileformat_to_db}"),
+                        'file': (self.file != '', f"{self.file}")
                         }
                     query_for_examination_SL3 = f"select Source, Notes from DS_info where " \
                                                 f"Source = '{source}' and " \
@@ -332,7 +427,7 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                             new_text_notes = text_before_notes + '\n' + f"{notes}"
                         else:
                             new_text_notes = f'{notes}'
-                        query_condition.update([('Notes', (notes != '', f"'{new_text_notes}'"))])
+                        query_condition.update([('Notes', (notes != '', f"{new_text_notes}"))])
                         print(query_condition)
                         mycursor = mydb.cursor()
                         query_list_column_name = []
@@ -361,8 +456,9 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
                                 if value[0] == True:
                                     query_list_column_name.append(key)
                                     query_list_value.append(value[1])
-                        query = f'insert into DS_info ({",".join(query_list_column_name)}) VALUES ({",".join(query_list_value)})'
-                        mycursor.execute(query)
+                        values_str = f'{"%s,"*len(query_list_value)}'[:-1]
+                        query = f'insert into DS_info ({",".join(query_list_column_name)}) VALUES ({values_str})'
+                        mycursor.execute(query, query_list_value)
                         mydb.commit()
                         print('Информация успешно записана')
                         self.label_result_add_to_ds_info.setText('Information added successfully')
@@ -377,6 +473,13 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             print(connection)
             self.label_result_add_to_ds_info.setText('Not connected to DB' + '\n' + string_split(str(connection)))
             self.label_result_add_to_ds_info.setStyleSheet('color:red')
+
+        self.filename_to_db = ''
+        self.fileformat_to_db = ''
+        self.file = ''
+
+
+
 
     def load_image(self):
         myPixmap = QPixmap('2.jpg')

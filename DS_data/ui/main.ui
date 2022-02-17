@@ -36,7 +36,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <property name="sizePolicy">
@@ -947,6 +947,24 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_setfile">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>SetFile</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -984,6 +1002,42 @@
        <attribute name="title">
         <string>Select from DS info</string>
        </attribute>
+       <widget class="QTextBrowser" name="textBrowser_for_question">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>90</y>
+          <width>1021</width>
+          <height>321</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_get_question">
+        <property name="geometry">
+         <rect>
+          <x>44</x>
+          <y>30</y>
+          <width>1001</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Get Question</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_show_answer">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>440</y>
+          <width>1001</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show Answer</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
