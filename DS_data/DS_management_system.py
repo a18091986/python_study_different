@@ -42,6 +42,11 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
         self.fileformat_to_db = ''
         self.file = ''
 
+        try:
+            os.mkdir(self.tempdir)
+        except:
+            pass
+
     def restore_all(self):
         mydb, connection = connect_to_db(self.lineEdit_ip.text(), self.lineEdit_port.text(), self.lineEdit_login.text(),
                                          self.lineEdit_pass.text(), self.lineEdit_name_of_db.text())
@@ -262,7 +267,8 @@ class DS_management_system(QMainWindow, Ui_MainWindow):
             self.file = file.read()
 
     def show_answer(self):
-        file_name_format = '.'.join([self.filename_to_db,self.fileformat_to_db])
+
+        file_name_format = '.'.join(['_'.join(self.filename_to_db.split(' ')),self.fileformat_to_db])
         print(file_name_format)
         self.write_to_file(self.file, file_name_format)
 
