@@ -1,0 +1,1 @@
+pip install nltk sklearn python-telegram-bot

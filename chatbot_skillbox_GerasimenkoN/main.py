@@ -6,6 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
+
 with open('BOT_CONFIG.json', encoding='utf-8') as f:
   BOT_CONFIG = json.load(f)
 del BOT_CONFIG['intents']['price']
