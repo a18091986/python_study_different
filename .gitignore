@@ -7,3 +7,17 @@ build
 *.spec
 *.fsf
 next_steps.txt
+
+.idea
+__pycache__
+db_connect.py
+venv
+dist
+build
+*.spec
+*.fsf
+next_steps.txt
+*.spec
+.idea
+NOT_FOR_GIT
+not_for_github

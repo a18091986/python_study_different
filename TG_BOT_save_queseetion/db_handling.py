@@ -1,4 +1,4 @@
-from db_connect import connect_to_db
+from NOT_FOR_GIT.db_connect_ import connect_to_db
 
 def insert_into_db(message):
     try:
