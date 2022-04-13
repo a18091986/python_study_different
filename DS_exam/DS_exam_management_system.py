@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QDialog, QMessageBox
 from main_window import Ui_MainWindow
-from db_connect import connect_to_db
+from NOT_FOR_GIT.db_connect import connect_to_db
 from string_split import string_split
 from random import choice
 
