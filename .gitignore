@@ -8,4 +8,6 @@ build
 *.fsf
 next_steps.txt
 *.spec
-
+.idea
+NOT_FOR_GIT
+not_for_github
