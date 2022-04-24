@@ -3,3 +3,6 @@ pip install pandas
 pip install mysql-connector-python
 pip install winshell
 pip install pypiwin32
+pip install winshell
+pip install nbformat
+pip install nbconvert
